@@ -22,6 +22,7 @@ import android.widget.FrameLayout
 import com.motionbreeze.MainActivity
 import com.motionbreeze.data.SettingsRepository
 import com.motionbreeze.ui.components.DotView
+import com.motionbreeze.util.MotionRecognitionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -80,6 +81,7 @@ class OverlayService : Service(), SensorEventListener {
         registerScreenReceiver()
         registerSensorListener()
         registerSettingsListener()
+        registerActivityRecognitionIfEnabled()
 
         _runningState.value = true
     }
@@ -93,6 +95,7 @@ class OverlayService : Service(), SensorEventListener {
         registerScreenReceiver()
         registerSensorListener()
         registerSettingsListener()
+        registerActivityRecognitionIfEnabled()
 
         _runningState.value = true
 
@@ -106,6 +109,7 @@ class OverlayService : Service(), SensorEventListener {
         unregisterScreenReceiver()
         unregisterSensorListener()
         unregisterSettingsListener()
+        removeActivityRecognition()
         removeOverlayView()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -118,6 +122,7 @@ class OverlayService : Service(), SensorEventListener {
         unregisterScreenReceiver()
         unregisterSensorListener()
         unregisterSettingsListener()
+        removeActivityRecognition()
         removeOverlayView()
         _runningState.value = false
     }
@@ -251,6 +256,17 @@ class OverlayService : Service(), SensorEventListener {
 
     private fun unregisterSettingsListener() {
         settingsRepository.unregisterListener(prefsListener)
+    }
+
+    private fun registerActivityRecognitionIfEnabled() {
+        val settings = settingsRepository.readSettings()
+        if (settings.autoActivate.autoActivate) {
+            MotionRecognitionManager.requestActivityUpdates(this)
+        }
+    }
+
+    private fun removeActivityRecognition() {
+        MotionRecognitionManager.removeActivityUpdates(this)
     }
 
     private fun handleSettingsChange(key: String?) {

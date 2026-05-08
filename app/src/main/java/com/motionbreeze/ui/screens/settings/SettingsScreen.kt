@@ -9,11 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.motionbreeze.data.AppSettings
 import com.motionbreeze.data.AutoActivateSettings
 import com.motionbreeze.data.DotSettings
 import com.motionbreeze.data.SettingsRepository
+import com.motionbreeze.util.MotionRecognitionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +23,7 @@ fun SettingsScreen(
     settingsRepository: SettingsRepository,
     onBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     var settings by remember { mutableStateOf(settingsRepository.readSettings()) }
 
     Scaffold(
@@ -60,6 +63,11 @@ fun SettingsScreen(
                 autoActivate = settings.autoActivate,
                 onAutoActivateChange = { newAutoActivate ->
                     settingsRepository.updateAutoActivate(newAutoActivate)
+                    if (newAutoActivate.autoActivate) {
+                        MotionRecognitionManager.requestActivityUpdates(context)
+                    } else {
+                        MotionRecognitionManager.removeActivityUpdates(context)
+                    }
                     settings = settingsRepository.readSettings()
                 },
             )
