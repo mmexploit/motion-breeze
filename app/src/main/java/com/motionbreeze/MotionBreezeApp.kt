@@ -3,13 +3,18 @@ package com.motionbreeze
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
+import com.motionbreeze.data.SettingsRepository
 import com.motionbreeze.service.OverlayService
 
 class MotionBreezeApp : Application() {
 
+    lateinit var settingsRepository: SettingsRepository
+        private set
+
     override fun onCreate() {
         super.onCreate()
+        instance = this
+        settingsRepository = SettingsRepository(this)
         createNotificationChannel()
     }
 
@@ -25,5 +30,10 @@ class MotionBreezeApp : Application() {
 
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(channel)
+    }
+
+    companion object {
+        lateinit var instance: MotionBreezeApp
+            private set
     }
 }

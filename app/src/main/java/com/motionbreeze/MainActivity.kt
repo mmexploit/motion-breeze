@@ -10,9 +10,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val settingsRepository = (application as MotionBreezeApp).settingsRepository
         setContent {
             MotionBreezeTheme {
-                MotionBreezeNavHost(this)
+                MotionBreezeNavHost(
+                    activity = this,
+                    settingsRepository = settingsRepository,
+                )
             }
         }
     }

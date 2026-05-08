@@ -50,7 +50,7 @@ class OverlayService : Service(), SensorEventListener {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        settingsRepository = SettingsRepository(this)
+        settingsRepository = (application as com.motionbreeze.MotionBreezeApp).settingsRepository
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
     }

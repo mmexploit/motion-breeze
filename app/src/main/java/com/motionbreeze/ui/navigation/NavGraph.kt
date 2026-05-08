@@ -1,8 +1,6 @@
 package com.motionbreeze.ui.navigation
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,11 +12,10 @@ import com.motionbreeze.ui.screens.settings.SettingsScreen
 @Composable
 fun MotionBreezeNavHost(
     activity: android.app.Activity,
+    settingsRepository: SettingsRepository,
 ) {
     val navController = rememberNavController()
-    val settingsRepository = remember { SettingsRepository(activity) }
     val settings = settingsRepository.readSettings()
-
     val startDestination = if (settings.hasCompletedOnboarding) "home" else "onboarding"
 
     NavHost(
@@ -50,9 +47,4 @@ fun MotionBreezeNavHost(
             )
         }
     }
-}
-
-@Composable
-private fun remember(calculation: () -> SettingsRepository): SettingsRepository {
-    return androidx.compose.runtime.remember { calculation() }
 }

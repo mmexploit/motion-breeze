@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
-import com.motionbreeze.data.SettingsRepository
 import com.motionbreeze.service.OverlayService
 
 class ActivityTransitionReceiver : BroadcastReceiver() {
@@ -30,7 +29,8 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
     }
 
     private fun onVehicleEntered(context: Context) {
-        val settings = SettingsRepository(context).readSettings()
+        val settings = (context.applicationContext as com.motionbreeze.MotionBreezeApp)
+            .settingsRepository.readSettings()
         if (!settings.autoActivate.autoActivate) {
             Log.d(TAG, "Auto-activate disabled — skipping")
             return
