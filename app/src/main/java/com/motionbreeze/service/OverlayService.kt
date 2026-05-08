@@ -22,6 +22,7 @@ import android.widget.FrameLayout
 import com.motionbreeze.MainActivity
 import com.motionbreeze.data.SettingsRepository
 import com.motionbreeze.ui.components.DotView
+import com.motionbreeze.ui.screens.inapp.MotionCueActivity
 import com.motionbreeze.util.MotionRecognitionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -99,7 +100,7 @@ class OverlayService : Service(), SensorEventListener {
 
         _runningState.value = true
 
-        val launchIntent = Intent(this, MainActivity::class.java).apply {
+        val launchIntent = Intent(this, MotionCueActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         startActivity(launchIntent)

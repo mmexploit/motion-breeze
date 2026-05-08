@@ -29,6 +29,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.screens.inapp.MotionCueActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MotionBreeze" />
+
         <service
             android:name=".service.OverlayService"
             android:exported="false"
