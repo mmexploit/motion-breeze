@@ -180,6 +180,28 @@ private fun AutoActivateSection(
                         },
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Prevent auto-stop")
+                        Text(
+                            "Overlay will not stop automatically when vehicle exit is detected",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = autoActivate.autoStopLock,
+                        onCheckedChange = {
+                            onAutoActivateChange(autoActivate.copy(autoStopLock = it))
+                        },
+                    )
+                }
             }
         }
     }

@@ -17,6 +17,7 @@ data class DotSettings(
 data class AutoActivateSettings(
     val autoActivate: Boolean = true,
     val confirmBeforeStart: Boolean = false,
+    val autoStopLock: Boolean = false,
 )
 
 data class AppSettings(
@@ -47,6 +48,7 @@ class SettingsRepository(context: Context) {
             autoActivate = AutoActivateSettings(
                 autoActivate = prefs.getBoolean(KEY_AUTO_ACTIVATE, true),
                 confirmBeforeStart = prefs.getBoolean(KEY_CONFIRM_BEFORE_START, false),
+                autoStopLock = prefs.getBoolean(KEY_AUTO_STOP_LOCK, false),
             ),
             hasCompletedOnboarding = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false),
             hasOverlayPermission = prefs.getBoolean(KEY_HAS_OVERLAY_PERMISSION, false),
@@ -66,6 +68,7 @@ class SettingsRepository(context: Context) {
     fun updateAutoActivate(settings: AutoActivateSettings) = prefs.edit().apply {
         putBoolean(KEY_AUTO_ACTIVATE, settings.autoActivate)
         putBoolean(KEY_CONFIRM_BEFORE_START, settings.confirmBeforeStart)
+        putBoolean(KEY_AUTO_STOP_LOCK, settings.autoStopLock)
     }.apply()
 
     fun setOnboardingComplete() = prefs.edit()
@@ -123,6 +126,7 @@ class SettingsRepository(context: Context) {
         private const val KEY_SMOOTHING_MS = "smoothing_ms"
         private const val KEY_AUTO_ACTIVATE = "auto_activate"
         private const val KEY_CONFIRM_BEFORE_START = "confirm_before_start"
+        private const val KEY_AUTO_STOP_LOCK = "auto_stop_lock"
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
         private const val KEY_HAS_OVERLAY_PERMISSION = "has_overlay_permission"
         private const val KEY_HAS_ACTIVITY_RECOGNITION = "has_activity_recognition"

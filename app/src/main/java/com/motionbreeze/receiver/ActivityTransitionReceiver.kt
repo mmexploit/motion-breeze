@@ -1,8 +1,11 @@
 package com.motionbreeze.receiver
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.SystemClock
 import android.util.Log
 import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
@@ -20,15 +23,21 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
 
                 if (event.activityType == DetectedActivity.IN_VEHICLE) {
                     when (event.transitionType) {
-                        0 -> onVehicleEntered(context)
-                        1 -> onVehicleExited(context)
+                        TRANSITION_ENTER -> onVehicleEntered(context)
+                        TRANSITION_EXIT -> onVehicleExited(context)
                     }
                 }
             }
         }
+
+        if (ACTION_GRACE_PERIOD_STOP == intent.action) {
+            onGracePeriodExpired(context)
+        }
     }
 
-    private fun onVehicleEntered(context: Context) {
+    internal fun onVehicleEntered(context: Context) {
+        cancelPendingStop(context)
+
         val settings = (context.applicationContext as com.motionbreeze.MotionBreezeApp)
             .settingsRepository.readSettings()
         if (!settings.autoActivate.autoActivate) {
@@ -46,16 +55,68 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
         if (settings.autoActivate.confirmBeforeStart) {
             showConfirmationNotification(context)
         } else {
-            val intent = Intent(context, OverlayService::class.java).apply {
+            val overlayIntent = Intent(context, OverlayService::class.java).apply {
                 action = OverlayService.ACTION_START_OVERLAY
             }
-            context.startForegroundService(intent)
+            context.startForegroundService(overlayIntent)
         }
     }
 
     private fun onVehicleExited(context: Context) {
         if (!OverlayService.isRunning) return
-        Log.d(TAG, "Vehicle motion ended — stopping overlay")
+
+        val settings = (context.applicationContext as com.motionbreeze.MotionBreezeApp)
+            .settingsRepository.readSettings()
+
+        if (settings.autoActivate.autoStopLock) {
+            Log.d(TAG, "Auto-stop lock enabled — ignoring vehicle exit")
+            return
+        }
+
+        Log.d(TAG, "Vehicle exit detected — starting 2-minute grace period")
+        scheduleGracePeriodStop(context)
+    }
+
+    private fun scheduleGracePeriodStop(context: Context) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val stopIntent = Intent(context, ActivityTransitionReceiver::class.java).apply {
+            action = ACTION_GRACE_PERIOD_STOP
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            GRACE_PERIOD_REQUEST_CODE,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+        val triggerTime = SystemClock.elapsedRealtime() + GRACE_PERIOD_MS
+        try {
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent)
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Cannot set exact alarm, using inexact: ${e.message}")
+            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerTime, pendingIntent)
+        }
+    }
+
+    private fun cancelPendingStop(context: Context) {
+        val stopIntent = Intent(context, ActivityTransitionReceiver::class.java).apply {
+            action = ACTION_GRACE_PERIOD_STOP
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            GRACE_PERIOD_REQUEST_CODE,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(pendingIntent)
+        pendingIntent.cancel()
+        Log.d(TAG, "Grace period timer cancelled (vehicle re-enter)")
+    }
+
+    private fun onGracePeriodExpired(context: Context) {
+        if (!OverlayService.isRunning) return
+        Log.d(TAG, "Grace period expired — stopping overlay")
         val intent = Intent(context, OverlayService::class.java).apply {
             action = OverlayService.ACTION_STOP
         }
@@ -78,9 +139,9 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
         val startIntent = Intent(context, OverlayService::class.java).apply {
             action = OverlayService.ACTION_START_OVERLAY
         }
-        val startPendingIntent = android.app.PendingIntent.getService(
+        val startPendingIntent = PendingIntent.getService(
             context, 0, startIntent,
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notification = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -116,8 +177,8 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
     }
 
     private fun transitionTypeToString(type: Int): String = when (type) {
-        0 -> "ENTER"
-        1 -> "EXIT"
+        TRANSITION_ENTER -> "ENTER"
+        TRANSITION_EXIT -> "EXIT"
         else -> "UNKNOWN($type)"
     }
 
@@ -125,5 +186,10 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
         private const val TAG = "ActivityTransition"
         private const val CONFIRM_CHANNEL_ID = "motion_breeze_confirm"
         private const val CONFIRM_NOTIFICATION_ID = 2
+        private const val TRANSITION_ENTER = 0
+        private const val TRANSITION_EXIT = 1
+        private const val GRACE_PERIOD_REQUEST_CODE = 2001
+        const val GRACE_PERIOD_MS = 2 * 60 * 1000L
+        private const val ACTION_GRACE_PERIOD_STOP = "com.motionbreeze.action.GRACE_PERIOD_STOP"
     }
 }
