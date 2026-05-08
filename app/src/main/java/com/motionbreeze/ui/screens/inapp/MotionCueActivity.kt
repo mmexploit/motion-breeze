@@ -173,6 +173,14 @@ class MotionCueActivity : ComponentActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
+    private fun switchToOverlayMode() {
+        val overlayIntent = Intent(this, OverlayService::class.java).apply {
+            action = OverlayService.ACTION_START_OVERLAY
+        }
+        startService(overlayIntent)
+        finish()
+    }
+
     override fun onSensorChanged(event: SensorEvent) {
         val settings = settingsRepository.readSettings().dots
         val tau = settings.smoothingMs / 1000.0
