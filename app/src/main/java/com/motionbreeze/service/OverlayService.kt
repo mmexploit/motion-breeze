@@ -73,7 +73,13 @@ class OverlayService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun startOverlay() {
-        if (isRunning) return
+        if (isRunning) {
+            if (!isOverlayMode) {
+                isOverlayMode = true
+                createOverlayView()
+            }
+            return
+        }
         isRunning = true
         isOverlayMode = true
 

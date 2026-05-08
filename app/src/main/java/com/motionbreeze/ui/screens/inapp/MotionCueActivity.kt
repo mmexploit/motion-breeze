@@ -147,6 +147,10 @@ class MotionCueActivity : ComponentActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
+        if (Settings.canDrawOverlays(this)) {
+            switchToOverlayMode()
+            return
+        }
         registerSensorListener()
     }
 
