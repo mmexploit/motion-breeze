@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Motion Breeze</string>
+    <string name="notification_channel_name">Motion Cues Active</string>
+    <string name="notification_title">Motion Breeze</string>
+    <string name="notification_text">Motion cues are active</string>
+    <string name="notification_stop">Stop</string>
+
+    <string name="onboarding_overlay_title">Display Over Other Apps</string>
+    <string name="onboarding_overlay_desc">Motion Breeze needs permission to show motion cue dots over other apps. This is essential for reducing motion sickness while using your phone in a moving vehicle.</string>
+    <string name="onboarding_overlay_button">Grant Permission</string>
+
+    <string name="onboarding_activity_title">Activity Recognition</string>
+    <string name="onboarding_activity_desc">Motion Breeze can automatically activate when it detects you\'re in a vehicle. This requires access to activity recognition.</string>
+    <string name="onboarding_activity_button">Grant Permission</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+
+    <string name="home_active">Motion cues are active</string>
+    <string name="home_inactive">Motion cues are inactive</string>
+    <string name="home_start">Start</string>
+    <string name="home_stop">Stop</string>
+    <string name="home_settings">Settings</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_dots_title">Dot Configuration</string>
+    <string name="settings_dots_per_side">Dots per side</string>
+    <string name="settings_dots_size">Dot size (dp)</string>
+    <string name="settings_sensitivity">Motion sensitivity</string>
+    <string name="settings_auto_activate">Auto-activate in vehicle</string>
+    <string name="settings_confirm_before_start">Confirm before starting</string>
+    <string name="settings_opacity_min">Minimum opacity (%)</string>
+    <string name="settings_opacity_max">Maximum opacity (%)</string>
+
+    <string name="overlay_notification_channel">Motion Cues</string>
+</resources>
