@@ -80,6 +80,13 @@ class SettingsRepository(context: Context) {
         .putBoolean(KEY_HAS_ACTIVITY_RECOGNITION, has)
         .apply()
 
+    fun hasShownBatteryPrompt(): Boolean =
+        prefs.getBoolean(KEY_BATTERY_PROMPT_SHOWN, false)
+
+    fun setBatteryPromptShown() = prefs.edit()
+        .putBoolean(KEY_BATTERY_PROMPT_SHOWN, true)
+        .apply()
+
     fun writeSettingsForOverlay(settings: AppSettings) = prefs.edit().apply {
         putInt(KEY_DOTS_PER_SIDE, settings.dots.dotsPerSide)
         putInt(KEY_DOT_SIZE_DP, settings.dots.dotSizeDp)
@@ -119,5 +126,6 @@ class SettingsRepository(context: Context) {
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
         private const val KEY_HAS_OVERLAY_PERMISSION = "has_overlay_permission"
         private const val KEY_HAS_ACTIVITY_RECOGNITION = "has_activity_recognition"
+        private const val KEY_BATTERY_PROMPT_SHOWN = "battery_prompt_shown"
     }
 }

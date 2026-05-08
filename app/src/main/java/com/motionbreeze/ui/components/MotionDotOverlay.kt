@@ -1,9 +1,8 @@
-package com.motionbreeze.service
+package com.motionbreeze.ui.components
 
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.PixelFormat
 import android.view.View
 
 class DotView(

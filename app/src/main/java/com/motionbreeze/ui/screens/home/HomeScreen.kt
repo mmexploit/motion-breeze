@@ -1,7 +1,7 @@
 package com.motionbreeze.ui.screens.home
 
-import android.content.Context
 import android.content.Intent
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -25,7 +25,54 @@ fun HomeScreen(
     val context = LocalContext.current
     val settings = settingsRepository.readSettings()
     val hasOverlayPermission = Settings.canDrawOverlays(context)
-    var isOverlayRunning by remember { mutableStateOf(OverlayService.isRunning) }
+    val isRunning by OverlayService.runningState.collectAsState()
+
+    var showBatteryDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isRunning) {
+        if (isRunning && !settingsRepository.hasShownBatteryPrompt()) {
+            val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(context.packageName)) {
+                showBatteryDialog = true
+            }
+        }
+    }
+
+    if (showBatteryDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showBatteryDialog = false
+                settingsRepository.setBatteryPromptShown()
+            },
+            title = { Text("Keep Motion Breeze Running") },
+            text = {
+                Text(
+                    "Some phones may stop the overlay service to save battery. " +
+                    "Allow Motion Breeze to run without restrictions for reliable motion cues."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBatteryDialog = false
+                    settingsRepository.setBatteryPromptShown()
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = android.net.Uri.parse("package:${context.packageName}")
+                    }
+                    context.startActivity(intent)
+                }) {
+                    Text("Allow")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showBatteryDialog = false
+                    settingsRepository.setBatteryPromptShown()
+                }) {
+                    Text("Not now")
+                }
+            },
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -55,14 +102,13 @@ fun HomeScreen(
                 )
             } else {
                 ActiveStateCard(
-                    isRunning = isOverlayRunning,
+                    isRunning = isRunning,
                     onStart = {
                         context.startForegroundService(
                             Intent(context, OverlayService::class.java).apply {
                                 action = OverlayService.ACTION_START_OVERLAY
                             }
                         )
-                        isOverlayRunning = true
                     },
                     onStop = {
                         context.startService(
@@ -70,7 +116,6 @@ fun HomeScreen(
                                 action = OverlayService.ACTION_STOP
                             }
                         )
-                        isOverlayRunning = false
                     },
                 )
 
@@ -81,7 +126,6 @@ fun HomeScreen(
                         context.startActivity(Intent(context, OverlayService::class.java).apply {
                             action = OverlayService.ACTION_START_IN_APP
                         })
-                        isOverlayRunning = true
                     },
                 )
             }
